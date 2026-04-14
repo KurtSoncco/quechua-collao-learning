@@ -1,13 +1,16 @@
+export type VerbCategory = 'motion' | 'communication' | 'emotion' | 'daily' | 'work' | 'body' | 'nature' | 'mind';
+
 export interface Verb {
   infinitive: string;
   root: string;
   meaning: string;
+  category?: VerbCategory;
 }
 
 export type Tense = 'present' | 'past' | 'future' | 'imperative' | 'conditional' | 'present_progressive' | 'past_progressive' | 'future_progressive';
 export type Person = '1s' | '2s' | '3s' | '1pi' | '1pe' | '2p' | '3p';
 
-export const CONJUGATIONS: Record<Tense, Record<Person, string>> = {
+export const CONJUGATIONS: Record<Tense, Record<Person, string | string[]>> = {
   present: {
     '1s': 'ni',
     '2s': 'nki',
@@ -39,18 +42,18 @@ export const CONJUGATIONS: Record<Tense, Record<Person, string>> = {
     '1s': '',
     '2s': 'y',
     '3s': 'chun',
-    '1pi': 'sun',
+    '1pi': ['sunchis', 'sun'], // 'sunchis' is the standard Collao exhortative ("let's"), 'sun' is also used
     '1pe': '',
     '2p': 'ychis',
     '3p': 'chunku'
   },
   conditional: {
     '1s': 'yman',
-    '2s': 'ywaq',
+    '2s': ['waq', 'ykiman'], // Included both as requested
     '3s': 'nman',
-    '1pi': 'ysunman',
-    '1pe': 'ykuyman',
-    '2p': 'ywaqchis',
+    '1pi': ['sunchisman', 'chwan', 'sunman'], // 'sunchisman' is the standard full form for Collao
+    '1pe': 'ykuman',
+    '2p': ['waqchis', 'waqkichis'], // Corrected: 'ywaqchis' is incorrect; 'waqchis' is standard Collao
     '3p': 'nkuman'
   },
   present_progressive: {
@@ -204,7 +207,7 @@ export const TOP_VERBS: Verb[] = [
   { infinitive: 'khuyay', root: 'khuya', meaning: 'to love (deeply) / to pity' },
   { infinitive: 'kichiy', root: 'kichi', meaning: 'to pinch' },
   { infinitive: 'kuyuy', root: 'kuyu', meaning: 'to move' },
-  { infinitive: 'touch', root: 'llank\'a', meaning: 'to touch / to feel' }, // Corrected infinitive
+  { infinitive: 'llank\'ay', root: 'llank\'a', meaning: 'to touch / to feel' },
   { infinitive: 'llimphiy', root: 'llimphi', meaning: 'to paint' },
   { infinitive: 'llullakuy', root: 'llullaku', meaning: 'to lie' },
   { infinitive: 'llusiy', root: 'llusi', meaning: 'to smear / to anoint' },

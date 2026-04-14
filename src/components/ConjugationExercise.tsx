@@ -10,45 +10,44 @@ const PERSON_LABELS: Record<Person, string> = {
   '1s': 'I (Ñuqa)',
   '2s': 'You (Qan)',
   '3s': 'He/She (Pay)',
-  '1pi': 'We (Inclusive - Ñuqanchis)',
-  '1pe': 'We (Exclusive - Ñuqayku)',
+  '1pi': 'We Incl. (Ñuqanchis)',
+  '1pe': 'We Excl. (Ñuqayku)',
   '2p': 'You all (Qankuna)',
   '3p': 'They (Paykuna)'
 };
 
+const TENSE_LABELS: Record<Tense, string> = {
+  present: 'Present',
+  past: 'Past',
+  future: 'Future',
+  imperative: 'Imperative',
+  conditional: 'Conditional',
+  present_progressive: 'Present Progressive',
+  past_progressive: 'Past Progressive',
+  future_progressive: 'Future Progressive'
+};
+
+const TENSES: Tense[] = ['present', 'past', 'future', 'imperative', 'conditional', 'present_progressive', 'past_progressive', 'future_progressive'];
+const PERSONS: Person[] = ['1s', '2s', '3s', '1pi', '1pe', '2p', '3p'];
+const COUNT = 5;
+
 const ConjugationExercise: React.FC<Props> = ({ onComplete }) => {
-  const [exerciseData, setExerciseData] = useState<{ verb: Verb, tense: Tense, person: Person, correctAnswer: string }[]>([]);
+  const [exerciseData, setExerciseData] = useState<{ verb: Verb; tense: Tense; person: Person; correctAnswer: string }[]>([]);
   const [userAnswers, setUserAnswers] = useState<string[]>([]);
 
   useEffect(() => {
-    const tenses: Tense[] = ['present', 'past', 'future', 'imperative', 'conditional', 'present_progressive', 'past_progressive', 'future_progressive'];
-    const persons: Person[] = ['1s', '2s', '3s', '1pi', '1pe', '2p', '3p'];
-    
-    const selectedExercises = Array.from({ length: 5 }).map(() => {
+    const exercises = Array.from({ length: COUNT }).map(() => {
       const verb = TOP_VERBS[Math.floor(Math.random() * TOP_VERBS.length)];
-      const tense = tenses[Math.floor(Math.random() * tenses.length)];
-      let person = persons[Math.floor(Math.random() * persons.length)];
-      
-      // Fix for imperative 1s/1pe
-      if (tense === 'imperative' && (person === '1s' || person === '1pe')) {
-        person = '2s';
-      }
-      
+      const tense = TENSES[Math.floor(Math.random() * TENSES.length)];
+      let person = PERSONS[Math.floor(Math.random() * PERSONS.length)];
+      if (tense === 'imperative' && (person === '1s' || person === '1pe')) person = '2s';
       const suffix = CONJUGATIONS[tense][person];
-      const correctAnswer = verb.root + suffix;
-      
+      const correctAnswer = Array.isArray(suffix) ? verb.root + suffix[0] : verb.root + suffix;
       return { verb, tense, person, correctAnswer };
     });
-    
-    setExerciseData(selectedExercises);
-    setUserAnswers(new Array(5).fill(''));
+    setExerciseData(exercises);
+    setUserAnswers(new Array(COUNT).fill(''));
   }, []);
-
-  const handleInputChange = (index: number, value: string) => {
-    const newAnswers = [...userAnswers];
-    newAnswers[index] = value;
-    setUserAnswers(newAnswers);
-  };
 
   const handleSubmit = () => {
     let score = 0;
@@ -56,32 +55,52 @@ const ConjugationExercise: React.FC<Props> = ({ onComplete }) => {
       const isCorrect = userAnswers[i].trim().toLowerCase() === ex.correctAnswer.toLowerCase();
       if (isCorrect) score++;
       return {
-        question: `Conjugate ${ex.verb.infinitive} (${ex.verb.meaning}) in ${ex.tense} for ${PERSON_LABELS[ex.person]}`,
+        question: `Conjugate "${ex.verb.infinitive}" (${ex.verb.meaning}) — ${TENSE_LABELS[ex.tense]}, ${PERSON_LABELS[ex.person]}`,
         correct: ex.correctAnswer,
         user: userAnswers[i],
         isCorrect
       };
     });
-    onComplete(score, exerciseData.length, answers);
+    onComplete(score, COUNT, answers);
   };
+
+  const progress = Math.round((userAnswers.filter(a => a.trim().length > 0).length / COUNT) * 100);
 
   return (
     <div className="card">
       <h2 className="exercise-title">Conjugation: Fill in the Blanks</h2>
+
+      <div className="progress-row">
+        <div className="progress-track">
+          <div className="progress-fill" style={{ width: `${progress}%` }} />
+        </div>
+        <span className="progress-label">{userAnswers.filter(a => a.trim().length > 0).length}/{COUNT}</span>
+      </div>
+
       {exerciseData.map((ex, i) => (
         <div key={i} className="input-group">
-          <label className="conjugation-prompt">
-            <strong>{ex.verb.infinitive}</strong> ({ex.verb.meaning}) <br/>
-            Tense: <span>{ex.tense.charAt(0).toUpperCase() + ex.tense.slice(1)}</span> | Person: <span>{PERSON_LABELS[ex.person]}</span>
+          <label>
+            <strong style={{ color: 'var(--primary-dark)' }}>{ex.verb.infinitive}</strong>
+            <span style={{ color: 'var(--text-muted)' }}> — {ex.verb.meaning}</span>
+            <br />
+            <span style={{ fontSize: '0.82rem' }}>
+              {TENSE_LABELS[ex.tense]} · {PERSON_LABELS[ex.person]}
+            </span>
           </label>
           <input
             type="text"
+            inputMode="text"
+            autoCorrect="off"
+            autoCapitalize="none"
             value={userAnswers[i]}
             placeholder="Type conjugated verb..."
-            onChange={(e) => handleInputChange(i, e.target.value)}
+            onChange={(e) => {
+              const n = [...userAnswers]; n[i] = e.target.value; setUserAnswers(n);
+            }}
           />
         </div>
       ))}
+
       <button className="btn-primary" style={{ width: '100%' }} onClick={handleSubmit}>
         Submit Conjugations
       </button>
